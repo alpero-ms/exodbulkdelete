@@ -116,7 +116,7 @@ while ($findItemsResults.Items.Count -gt 0)
 $fcount++
 }
 $after = (Get-MailboxFolderStatistics $_.PrimarySMTPAddress | where {$_.ContainerClass -eq 'IPF.Note'} | Measure-Object -Sum -Property ItemsInFolder).Sum
-$logvalue = $TokenDateTime.ToString() + " - " + $_.PrimarySMTPAddress + " - Mailbox icin silinme oncesindeki deger : (" + $before + ") silinme sonrasindaki deger (" + $after + ")"
+$logvalue = $TokenDateTime.ToString() + " - " + $_.PrimarySMTPAddress + " - Item count before deletion : (" + $before + ") after deletion (" + $after + ")"
 Add-content $Logfile -value $logvalue
 }
 
