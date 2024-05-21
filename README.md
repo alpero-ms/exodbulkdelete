@@ -33,4 +33,6 @@
 
 9. Do not apply this script in a production environment without first testing it in a demo environment. The author disclaims any responsibility for damages or data loss resulting from the use of this script.
 
+10. I just created another version of script which resresh SAML token every 40 minutes (TTL is 60 minutes)
+
 
