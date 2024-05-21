@@ -98,6 +98,7 @@ try
 $message = [Microsoft.Exchange.WebServices.Data.Item]::Bind($Service, $item.Id, $propertyset)
 $message.Delete('HardDelete')
 $currentdate = Get-Date
+#Please set your timezone with this line + or -
 $tokentime = $MsalResponse.ExpiresOn.DateTime.AddHours(+3)
 $compare = ($tokentime - $currentdate)
 if($compare.Minute -lt 20)
