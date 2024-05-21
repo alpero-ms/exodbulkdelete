@@ -82,7 +82,7 @@ $Folderview.PropertySet.Add([Microsoft.Exchange.Webservices.Data.FolderSchema]::
 $Folderview.Traversal = [Microsoft.Exchange.Webservices.Data.FolderTraversal]::Deep
 $FolderSearchFilter = new-object Microsoft.Exchange.WebServices.Data.SearchFilter+IsEqualTo([Microsoft.Exchange.WebServices.Data.FolderSchema]::FolderClass, "IPF.Note")
 $FoldersResult = $Service.FindFolders([Microsoft.Exchange.Webservices.Data.WellKnownFolderName]::MsgFolderRoot,$FolderSearchFilter, $Folderview)
-$count = 50000
+$count = 1000
 $view = New-Object -TypeName Microsoft.Exchange.WebServices.Data.ItemView -ArgumentList $count
 $searchFilter = New-Object Microsoft.Exchange.WebServices.Data.SearchFilter+IsLessThan([Microsoft.Exchange.WebServices.Data.ItemSchema]::DateTimeCreated, [DateTime]"2024-4-4")
 $fcount = 0
