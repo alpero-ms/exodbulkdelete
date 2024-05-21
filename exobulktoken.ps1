@@ -67,7 +67,6 @@ function Clear-MsalTokenCache {
         $script:ConfidentialClientApplications = New-Object 'System.Collections.Generic.List[Microsoft.Identity.Client.IConfidentialClientApplication]'
     }
 }
-
 $Usr = get-mailbox sahin
 $usr | % {
 $before = (Get-MailboxFolderStatistics $_.PrimarySMTPAddress | where {$_.ContainerClass -eq 'IPF.Note'} | Measure-Object -Sum -Property ItemsInFolder).Sum
