@@ -36,7 +36,6 @@ You can use EWS to access and delete all emails older than a specific date acros
 #>
 Import-Module C:\lib\net35\Microsoft.Exchange.WebServices.dll
 Install-Module -Name MSAL.PS
-Install-Module PartnerCenter
 $TenantId = "xxx.onmicrosoft.com"
 $AppClientId="xxx"
 $MsalParams = @{
