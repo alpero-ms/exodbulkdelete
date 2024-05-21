@@ -67,7 +67,8 @@ function Clear-MsalTokenCache {
         $script:ConfidentialClientApplications = New-Object 'System.Collections.Generic.List[Microsoft.Identity.Client.IConfidentialClientApplication]'
     }
 }
-$Usr = get-mailbox sahin
+# you can import CSV or Apply a filter to collect the mailboxes to $Usr
+$Usr = get-mailbox username
 $usr | % {
 $before = (Get-MailboxFolderStatistics $_.PrimarySMTPAddress | where {$_.ContainerClass -eq 'IPF.Note'} | Measure-Object -Sum -Property ItemsInFolder).Sum
 $Eversion = [Microsoft.Exchange.WebServices.Data.ExchangeVersion]::Exchange2015
