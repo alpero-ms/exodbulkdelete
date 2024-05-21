@@ -22,9 +22,11 @@
 
 4. If you want to permanently delete the emails, do not forget to disable the Single Item Recovery (SIR) feature beforehand.
 
-5. Do not apply this script in a production environment without first testing it in a demo environment. The author disclaims any responsibility for damages or data loss resulting from the use of this script.
-
-6. To install EWS Managed API from powershell
+5. To install EWS Managed API from powershell
 
   	Register-PackageSource -provider NuGet -name nugetRepository -location https://www.nuget.org/api/v2
   	Install-Package Exchange.WebServices.Managed.Api
+
+6. Do not apply this script in a production environment without first testing it in a demo environment. The author disclaims any responsibility for damages or data loss resulting from the use of this script.
+
+
