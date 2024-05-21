@@ -45,7 +45,6 @@ $MsalParams = @{
     ClientSecret = (ConvertTo-SecureString 'xxx' -AsPlainText -Force)   
 }
 $Logfile = "c:\temp\delete.log"
-$totalitem = 0
 $TokenDateTime = Get-Date -DisplayHint Time
 $MsalResponse = Get-MsalToken @MsalParams
 $EWSAccessToken  = $MsalResponse.AccessToken
