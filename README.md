@@ -26,7 +26,11 @@
 
   	Register-PackageSource -provider NuGet -name nugetRepository -location https://www.nuget.org/api/v2
   	Install-Package Exchange.WebServices.Managed.Api
+   
+7.  The default lifetime of SAML token is 1 hour, after 1 hour you will get an error "401 unauth". You can increaase SAML roken lifetime for Azure App.
 
-6. Do not apply this script in a production environment without first testing it in a demo environment. The author disclaims any responsibility for damages or data loss resulting from the use of this script.
+     https://learn.microsoft.com/en-us/entra/identity-platform/configurable-token-lifetimes
+
+9. Do not apply this script in a production environment without first testing it in a demo environment. The author disclaims any responsibility for damages or data loss resulting from the use of this script.
 
 
