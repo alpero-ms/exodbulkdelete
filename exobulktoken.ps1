@@ -90,7 +90,7 @@ $FoldersResult | % {
 do
 {
 $findItemsResults = $FoldersResult.Folders[$fcount].FindItems($searchFilter,$view)
-Write-Host "item sayisi : "$findItemsResults.Items.Count "Folder ismi : " $FoldersResult.Folders[$fcount].DisplayName
+Write-Host "item sayisi : "$findItemsResults.Items.Count "Folder name : " $FoldersResult.Folders[$fcount].DisplayName
 foreach ($item in $findItemsResults.Items) {
 try
 {
