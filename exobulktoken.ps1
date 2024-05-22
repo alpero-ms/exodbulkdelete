@@ -34,8 +34,10 @@ You can use EWS to access and delete all emails older than a specific date acros
 5. Do not apply this script in a production environment without first testing it in a demo environment. The author disclaims any responsibility for damages or data loss resulting from the use of this script.
 
 #>
+
 Import-Module C:\lib\net35\Microsoft.Exchange.WebServices.dll
 Install-Module -Name MSAL.PS
+
 $TenantId = "xxx.onmicrosoft.com"
 $AppClientId="xxx"
 $MsalParams = @{
@@ -44,11 +46,14 @@ $MsalParams = @{
     Scopes   = "https://outlook.office365.com/.default"
     ClientSecret = (ConvertTo-SecureString 'xxx' -AsPlainText -Force)   
 }
-$Logfile = "c:\temp\delete.log"
+
+$Logfile = '*.log'
+$totalitem = 0
 $TokenDateTime = Get-Date -DisplayHint Time
 $MsalResponse = Get-MsalToken @MsalParams
 $EWSAccessToken  = $MsalResponse.AccessToken
-function Clear-MsalTokenCache {
+
+Function Clear-MsalTokenCache {
     [CmdletBinding()]
     param(
         # Clear the token cache from disk.
@@ -65,9 +70,18 @@ function Clear-MsalTokenCache {
         $script:ConfidentialClientApplications = New-Object 'System.Collections.Generic.List[Microsoft.Identity.Client.IConfidentialClientApplication]'
     }
 }
-# you can import CSV or Apply a filter to collect the mailboxes to $Usr
-$Usr = get-mailbox username
+
+Function Get-Token{
+$MsalResponse = Get-MsalToken @MsalParams
+$EWSAccessToken  = $MsalResponse.AccessToken
+$TokenDateTime = Get-Date -DisplayHint Time
+$Service.Credentials = [Microsoft.Exchange.WebServices.Data.OAuthCredentials]$EWSAccessToken
+}
+
+$Usr = get-mailbox sahin
 $usr | % {
+Write-Host $_.PrimarySMTPAddress -ForegroundColor Green
+$LogFile = 'C:\Temp\' + $_.PrimarySMTPAddress. + 'log'
 $before = (Get-MailboxFolderStatistics $_.PrimarySMTPAddress | where {$_.ContainerClass -eq 'IPF.Note'} | Measure-Object -Sum -Property ItemsInFolder).Sum
 $Eversion = [Microsoft.Exchange.WebServices.Data.ExchangeVersion]::Exchange2015
 $Service = New-Object Microsoft.Exchange.WebServices.Data.ExchangeService($Eversion)
@@ -81,7 +95,7 @@ $Folderview.PropertySet.Add([Microsoft.Exchange.Webservices.Data.FolderSchema]::
 $Folderview.Traversal = [Microsoft.Exchange.Webservices.Data.FolderTraversal]::Deep
 $FolderSearchFilter = new-object Microsoft.Exchange.WebServices.Data.SearchFilter+IsEqualTo([Microsoft.Exchange.WebServices.Data.FolderSchema]::FolderClass, "IPF.Note")
 $FoldersResult = $Service.FindFolders([Microsoft.Exchange.Webservices.Data.WellKnownFolderName]::MsgFolderRoot,$FolderSearchFilter, $Folderview)
-$count = 1000
+$count = 50000
 $view = New-Object -TypeName Microsoft.Exchange.WebServices.Data.ItemView -ArgumentList $count
 $searchFilter = New-Object Microsoft.Exchange.WebServices.Data.SearchFilter+IsLessThan([Microsoft.Exchange.WebServices.Data.ItemSchema]::DateTimeCreated, [DateTime]"2024-4-4")
 $fcount = 0
@@ -89,22 +103,28 @@ $propertySet = New-Object Microsoft.Exchange.WebServices.Data.PropertySet([Micro
 $FoldersResult | % {
 do
 {
+try
+{
 $findItemsResults = $FoldersResult.Folders[$fcount].FindItems($searchFilter,$view)
-Write-Host "item sayisi : "$findItemsResults.Items.Count "Folder name : " $FoldersResult.Folders[$fcount].DisplayName
+Write-Host "item sayisi : "$findItemsResults.Items.Count "Folder ismi : " $FoldersResult.Folders[$fcount].DisplayName
+}
+catch
+{
+Clear-MsalTokenCache
+Get-Token
+}
 foreach ($item in $findItemsResults.Items) {
 try
 {
 $message = [Microsoft.Exchange.WebServices.Data.Item]::Bind($Service, $item.Id, $propertyset)
 $message.Delete('HardDelete')
 $currentdate = Get-Date
-#Please set your timezone with this line + or -
 $tokentime = $MsalResponse.ExpiresOn.DateTime.AddHours(+3)
 $compare = ($tokentime - $currentdate)
 if($compare.Minute -lt 20)
 {
 Clear-MsalTokenCache
-$MsalResponse = Get-MsalToken @MsalParams
-$EWSAccessToken  = $MsalResponse.AccessToken
+Get-Token
 }
 }
 catch
