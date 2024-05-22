@@ -35,6 +35,7 @@ You can use EWS to access and delete all emails older than a specific date acros
 
 #>
 
+
 Import-Module C:\lib\net35\Microsoft.Exchange.WebServices.dll
 Install-Module -Name MSAL.PS
 
@@ -47,15 +48,16 @@ $MsalParams = @{
     ClientSecret = (ConvertTo-SecureString 'xxx' -AsPlainText -Force)   
 }
 
-$Logfile = '*.log'
-$totalitem = 0
-$TokenDateTime = Get-Date -DisplayHint Time
+$Logfile = ""
+$UserTime = Get-Date
 $MsalResponse = Get-MsalToken @MsalParams
 $EWSAccessToken  = $MsalResponse.AccessToken
+
 
 Function Clear-MsalTokenCache {
     [CmdletBinding()]
     param(
+        # Clear the token cache from disk.
         [Parameter(Mandatory = $false)]
         [switch] $FromDisk
     )
@@ -73,14 +75,15 @@ Function Clear-MsalTokenCache {
 Function Get-Token{
 $MsalResponse = Get-MsalToken @MsalParams
 $EWSAccessToken  = $MsalResponse.AccessToken
-$TokenDateTime = Get-Date -DisplayHint Time
 $Service.Credentials = [Microsoft.Exchange.WebServices.Data.OAuthCredentials]$EWSAccessToken
 }
 
-$Usr = get-mailbox alper@cloudvision.com.tr
+$Usr = get-mailbox sahin
 $usr | % {
 Write-Host $_.PrimarySMTPAddress -ForegroundColor Green
-$LogFile = 'C:\Temp\' + $_.PrimarySMTPAddress. + 'log'
+$UserStartTime = Get-Date
+$TotalItemcount = 0
+$LogFile = 'C:\Temp\' + $_.PrimarySMTPAddress + '.log'
 $before = (Get-MailboxFolderStatistics $_.PrimarySMTPAddress | where {$_.ContainerClass -eq 'IPF.Note'} | Measure-Object -Sum -Property ItemsInFolder).Sum
 $Eversion = [Microsoft.Exchange.WebServices.Data.ExchangeVersion]::Exchange2015
 $Service = New-Object Microsoft.Exchange.WebServices.Data.ExchangeService($Eversion)
@@ -96,7 +99,7 @@ $FolderSearchFilter = new-object Microsoft.Exchange.WebServices.Data.SearchFilte
 $FoldersResult = $Service.FindFolders([Microsoft.Exchange.Webservices.Data.WellKnownFolderName]::MsgFolderRoot,$FolderSearchFilter, $Folderview)
 $count = 50000
 $view = New-Object -TypeName Microsoft.Exchange.WebServices.Data.ItemView -ArgumentList $count
-$searchFilter = New-Object Microsoft.Exchange.WebServices.Data.SearchFilter+IsLessThan([Microsoft.Exchange.WebServices.Data.ItemSchema]::DateTimeCreated, [DateTime]"2024-4-4")
+$searchFilter = New-Object Microsoft.Exchange.WebServices.Data.SearchFilter+IsLessThan([Microsoft.Exchange.WebServices.Data.ItemSchema]::DateTimeCreated, [DateTime]"2024-5-5")
 $fcount = 0
 $propertySet = New-Object Microsoft.Exchange.WebServices.Data.PropertySet([Microsoft.Exchange.WebServices.Data.BasePropertySet]::FirstClassProperties) 
 $FoldersResult | % {
@@ -105,7 +108,8 @@ do
 try
 {
 $findItemsResults = $FoldersResult.Folders[$fcount].FindItems($searchFilter,$view)
-Write-Host "item sayisi : "$findItemsResults.Items.Count "Folder name : " $FoldersResult.Folders[$fcount].DisplayName
+Write-Host "Item Count : " $findItemsResults.Items.Count "Folder name : " $FoldersResult.Folders[$fcount].DisplayName
+$TotalItemcount += $findItemsResults.Items.Count
 }
 catch
 {
@@ -134,8 +138,9 @@ catch
 while ($findItemsResults.Items.Count -gt 0)
 $fcount++
 }
+$UserEndTime = Get-Date
+$Measure = $UserEndTime.Minute - $UserStartTime.Minute
 $after = (Get-MailboxFolderStatistics $_.PrimarySMTPAddress | where {$_.ContainerClass -eq 'IPF.Note'} | Measure-Object -Sum -Property ItemsInFolder).Sum
-$logvalue = $TokenDateTime.ToString() + " - " + $_.PrimarySMTPAddress + " - Item count before deletion : (" + $before + ") after deletion (" + $after + ")"
-Add-content $Logfile -value $logvalue
+$logvalue = "Start time : (" + $UserStartTime.ToString() + ") - " + $_.PrimarySMTPAddress + " - Item count before deletion : (" + $before + ") Item count after deletion (" + $after + ") End time : (" + $UserEndTime.ToString() + ") Elapsed total minutes : (" + $Measure.ToString() +" Minutes) Total deleted item : (" + $TotalItemcount + ")"
+Add-content $LogFile -value $logvalue
 }
-
