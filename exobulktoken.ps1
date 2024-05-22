@@ -56,7 +56,6 @@ $EWSAccessToken  = $MsalResponse.AccessToken
 Function Clear-MsalTokenCache {
     [CmdletBinding()]
     param(
-        # Clear the token cache from disk.
         [Parameter(Mandatory = $false)]
         [switch] $FromDisk
     )
@@ -78,7 +77,7 @@ $TokenDateTime = Get-Date -DisplayHint Time
 $Service.Credentials = [Microsoft.Exchange.WebServices.Data.OAuthCredentials]$EWSAccessToken
 }
 
-$Usr = get-mailbox sahin
+$Usr = get-mailbox alper@cloudvision.com.tr
 $usr | % {
 Write-Host $_.PrimarySMTPAddress -ForegroundColor Green
 $LogFile = 'C:\Temp\' + $_.PrimarySMTPAddress. + 'log'
