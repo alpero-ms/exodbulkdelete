@@ -78,7 +78,7 @@ $EWSAccessToken  = $MsalResponse.AccessToken
 $Service.Credentials = [Microsoft.Exchange.WebServices.Data.OAuthCredentials]$EWSAccessToken
 }
 
-$Usr = get-mailbox sahin
+$Usr = get-mailbox alper@cloudvision.com.tr
 $usr | % {
 Write-Host $_.PrimarySMTPAddress -ForegroundColor Green
 $UserStartTime = Get-Date
