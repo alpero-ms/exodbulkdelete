@@ -67,7 +67,7 @@ Get-Token
 $query = "((CustomAttribute2 -eq 'Sales Turkey') -or (CustomAttribute2 -eq 'Sales))"
 $LogFile = 'C:\Temp\deletednewitemcount.log'
 $mbx = Get-Recipient -Filter $query -RecipientTypeDetails UserMailbox,SharedMailbox,RoomMailbox,EquipmentMailbox  -ResultSize Unlimited
-$mbx = $mbx | Select-Object -Index @(151..200)
+$mbx = $mbx | Select-Object -Index @(1..200)
 Do
 {
 $mbx | % {
