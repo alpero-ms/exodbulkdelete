@@ -76,7 +76,7 @@ $EWSAccessToken  = $MsalResponse.AccessToken
 $Service.Credentials = [Microsoft.Exchange.WebServices.Data.OAuthCredentials]$EWSAccessToken
 }
 
-$query = "((CustomAttribute2 -eq 'Satış') -or (CustomAttribute2 -eq 'Satış Stratejileri')) -and ((CustomAttribute1 -eq 'Efes Türkiye') -or (CustomAttribute1 -eq 'Efes Turkey')) -and (EmailAddresses -ne 'izzet.ozilhan@tr.anadoluefes.com') -and (CustomAttribute3 -ne 'Kıbrıs Satış')"
+$query = "((CustomAttribute2 -eq 'Sales Turkey') -or (CustomAttribute2 -eq 'Sales'))"
 $LogFile = 'C:\Temp\deletednewitemcount.log'
 $mbx = Get-Recipient "alpers@cloudvision.com.tr"
 
