@@ -32,8 +32,6 @@ You can use EWS to access and delete all emails older than a specific date acros
 4. If you want to permanently delete the emails, do not forget to disable the Single Item Recovery (SIR) feature beforehand.
 
 5. Do not apply this script in a production environment without first testing it in a demo environment. The author disclaims any responsibility for damages or data loss resulting from the use of this script.
-
-
 Import-Module C:\lib\net35\Microsoft.Exchange.WebServices.dll
 Install-Module -Name MSAL.PS
 
@@ -51,35 +49,27 @@ $UserTime = Get-Date
 $MsalResponse = Get-MsalToken @MsalParams
 $EWSAccessToken  = $MsalResponse.AccessToken
 
-
-Function Clear-MsalTokenCache {
-    [CmdletBinding()]
-    param(
-        # Clear the token cache from disk.
-        [Parameter(Mandatory = $false)]
-        [switch] $FromDisk
-    )
-
-    if ($FromDisk) {
-        $TokenCachePath = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) "MSAL.PS\MSAL.PS.msalcache.bin3"
-        if (Test-Path $TokenCachePath) { Remove-Item -LiteralPath $TokenCachePath -Force }
-    }
-    else {
-        $script:PublicClientApplications = New-Object 'System.Collections.Generic.List[Microsoft.Identity.Client.IPublicClientApplication]'
-        $script:ConfidentialClientApplications = New-Object 'System.Collections.Generic.List[Microsoft.Identity.Client.IConfidentialClientApplication]'
-    }
-}
-
 Function Get-Token{
-$MsalResponse = Get-MsalToken @MsalParams
+$MsalResponse = Get-MsalToken @MsalParams -ForceRefresh
 $EWSAccessToken  = $MsalResponse.AccessToken
 $Service.Credentials = [Microsoft.Exchange.WebServices.Data.OAuthCredentials]$EWSAccessToken
 }
+Function Check-Token{
+$currentdate = Get-Date
+$tokentime = $MsalResponse.ExpiresOn.DateTime.AddHours(+3)
+$compare = ($tokentime - $currentdate)
+if($compare.Minutes -lt 20)
+{
+Get-Token
+}
+}
 
-$query = "((CustomAttribute2 -eq 'Sales Turkey') -or (CustomAttribute2 -eq 'Sales'))"
+$query = "((CustomAttribute2 -eq 'Sales Turkey') -or (CustomAttribute2 -eq 'Sales))"
 $LogFile = 'C:\Temp\deletednewitemcount.log'
-$mbx = Get-Recipient "alpers@cloudvision.com.tr"
-
+$mbx = Get-Recipient -Filter $query -RecipientTypeDetails UserMailbox,SharedMailbox,RoomMailbox,EquipmentMailbox  -ResultSize Unlimited
+$mbx = $mbx | Select-Object -Index @(151..200)
+Do
+{
 $mbx | % {
 Write-Host "Mailbox : " $_.PrimarySMTPAddress -ForegroundColor Green
 Write-Host "--------------------------------------------------------" -ForegroundColor Green
@@ -111,14 +101,6 @@ $FoldersResult | % {
 try
 {
 $allItems = @()
-$currentdate = Get-Date
-$tokentime = $MsalResponse.ExpiresOn.DateTime.AddHours(+3)
-$compare = ($tokentime - $currentdate)
-if($compare.Minute -lt 20)
-{
-Clear-MsalTokenCache
-Get-Token
-}
 do
 {
 try
@@ -137,10 +119,11 @@ try
     }
     $processTimer.Stop()
     write-host $processTimer.Elapsed $allItemsarray.Count
+    Check-Token
     }
+
 catch
 {
-Clear-MsalTokenCache
 Get-Token
 }
 }
@@ -151,7 +134,6 @@ $totalitems += $allItems.Count
 }
 catch
 {
-Clear-MsalTokenCache
 Get-Token
 }
 }
@@ -167,6 +149,7 @@ foreach ($item in $allItemsarray)
 {
 try
 {
+Check-Token
 $message = [Microsoft.Exchange.WebServices.Data.Item]::Bind($Service, $item.Id, $propertyset)
 $message.Delete('HardDelete')
 $silinen++
@@ -174,14 +157,12 @@ Write-Host $silinen " :|---|: " $totalitems -ForegroundColor Green
 }
 catch
 {
-Clear-MsalTokenCache
 Get-Token
 }
 }
 }
 catch
 {
-Clear-MsalTokenCache
 Get-Token
 }
 $endtime =  get-date
@@ -190,4 +171,8 @@ Write-Host "--------------------------------------------------------" -Foregroun
 Write-Host $_.PrimarySMTPAddress " - Total deleted item count : ("  $silinen  ")"
 Write-Host "--------------------------------------------------------" -ForegroundColor Green
 Add-content $LogFile -value $logtext
+Start-Sleep -Seconds 5
+Get-Token
 }
+}
+while (1 -gt 0)
