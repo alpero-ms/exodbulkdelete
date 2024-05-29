@@ -46,17 +46,18 @@ $MsalParams = @{
 
 $Logfile = ""
 $UserTime = Get-Date
-$MsalResponse = Get-MsalToken @MsalParams
-$EWSAccessToken  = $MsalResponse.AccessToken
+$global:MsalResponse = Get-MsalToken @MsalParams
+$global:EWSAccessToken  = $MsalResponse.AccessToken
 
 Function Get-Token{
-$MsalResponse = Get-MsalToken @MsalParams -ForceRefresh
-$EWSAccessToken  = $MsalResponse.AccessToken
-$Service.Credentials = [Microsoft.Exchange.WebServices.Data.OAuthCredentials]$EWSAccessToken
+$global:MsalResponse = Get-MsalToken @MsalParams -ForceRefresh
+$global:EWSAccessToken  = $global:MsalResponse.AccessToken
+$global:Service.Credentials = [Microsoft.Exchange.WebServices.Data.OAuthCredentials]$global:EWSAccessToken
 }
+
 Function Check-Token{
 $currentdate = Get-Date
-$tokentime = $MsalResponse.ExpiresOn.DateTime.AddHours(+3)
+$tokentime = $global:MsalResponse.ExpiresOn.DateTime.AddHours(+3)
 $compare = ($tokentime - $currentdate)
 if($compare.Minutes -lt 20)
 {
@@ -67,17 +68,17 @@ Get-Token
 $query = "((CustomAttribute2 -eq 'Sales Turkey') -or (CustomAttribute2 -eq 'Sales))"
 $LogFile = 'C:\Temp\deletednewitemcount.log'
 $mbx = Get-Recipient -Filter $query -RecipientTypeDetails UserMailbox,SharedMailbox,RoomMailbox,EquipmentMailbox  -ResultSize Unlimited
-$mbx = $mbx | Select-Object -Index @(1..200)
+$mbx = $mbx | Select-Object -Index @(301..450)
 Do
 {
 $mbx | % {
 Write-Host "Mailbox : " $_.PrimarySMTPAddress -ForegroundColor Green
 Write-Host "--------------------------------------------------------" -ForegroundColor Green
 $Eversion = [Microsoft.Exchange.WebServices.Data.ExchangeVersion]::Exchange2015
-$Service = New-Object Microsoft.Exchange.WebServices.Data.ExchangeService($Eversion)
-$Service.Credentials = [Microsoft.Exchange.WebServices.Data.OAuthCredentials]$EWSAccessToken
-$Service.Url = "https://outlook.office365.com/EWS/Exchange.asmx"
-$Service.ImpersonatedUserId = new-object Microsoft.Exchange.WebServices.Data.ImpersonatedUserId([Microsoft.Exchange.WebServices.Data.ConnectingIdType]::SmtpAddress, $($_.PrimarySMTPAddress)) 
+$global:Service = New-Object Microsoft.Exchange.WebServices.Data.ExchangeService($Eversion)
+$global:Service.Credentials = [Microsoft.Exchange.WebServices.Data.OAuthCredentials]$global:EWSAccessToken
+$global:Service.Url = "https://outlook.office365.com/EWS/Exchange.asmx"
+$global:Service.ImpersonatedUserId = new-object Microsoft.Exchange.WebServices.Data.ImpersonatedUserId([Microsoft.Exchange.WebServices.Data.ConnectingIdType]::SmtpAddress, $($_.PrimarySMTPAddress)) 
 $propertySet = New-Object Microsoft.Exchange.WebServices.Data.PropertySet([Microsoft.Exchange.WebServices.Data.BasePropertySet]::FirstClassProperties)
 
 $Folderview = New-Object Microsoft.Exchange.WebServices.Data.FolderView(1000)
@@ -150,7 +151,7 @@ foreach ($item in $allItemsarray)
 try
 {
 Check-Token
-$message = [Microsoft.Exchange.WebServices.Data.Item]::Bind($Service, $item.Id, $propertyset)
+$message = [Microsoft.Exchange.WebServices.Data.Item]::Bind($global:Service, $item.Id, $propertyset)
 $message.Delete('HardDelete')
 $silinen++
 Write-Host $silinen " :|---|: " $totalitems -ForegroundColor Green
