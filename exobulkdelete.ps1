@@ -33,6 +33,8 @@ You can use EWS to access and delete all emails older than a specific date acros
 
 5. Do not apply this script in a production environment without first testing it in a demo environment. The author disclaims any responsibility for damages or data loss resulting from the use of this script.
 
+6. You can run more than one script at same time to purge emails faster, I Tried with 6 without any error.
+
 #>
 
 Import-Module C:\lib\net35\Microsoft.Exchange.WebServices.dll
