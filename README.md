@@ -33,5 +33,7 @@
 
 9. Do not apply this script in a production environment without first testing it in a demo environment. The author disclaims any responsibility for damages or data loss resulting from the use of this script.
 
+10. I've deleted more than 5M emails in 4 days with this script (I have used 2 Azure app with 12 PS ISE Screen) on my CX tenant.
+
 
 
