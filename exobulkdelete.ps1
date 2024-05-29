@@ -32,6 +32,9 @@ You can use EWS to access and delete all emails older than a specific date acros
 4. If you want to permanently delete the emails, do not forget to disable the Single Item Recovery (SIR) feature beforehand.
 
 5. Do not apply this script in a production environment without first testing it in a demo environment. The author disclaims any responsibility for damages or data loss resulting from the use of this script.
+
+#>
+
 Import-Module C:\lib\net35\Microsoft.Exchange.WebServices.dll
 Install-Module -Name MSAL.PS
 
